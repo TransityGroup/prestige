@@ -12,11 +12,11 @@ config :tesla, :adapter, Tesla.Adapter.Hackney
 
 # You can configure your application as:
 #
-#     config :prestodb, key: :value
+#     config :prestige, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:prestodb, :key)
+#     Application.get_env(:prestige, :key)
 #
 # You can also configure a third-party app:
 #

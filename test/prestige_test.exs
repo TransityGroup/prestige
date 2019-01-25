@@ -1,4 +1,4 @@
-defmodule PrestodbTest do
+defmodule PrestigeTest do
   use ExUnit.Case
 
   setup do
@@ -26,14 +26,14 @@ defmodule PrestodbTest do
 
     test "can execute a query and return data as enumerable" do
       result =
-        Prestodb.execute("select * from users") |> Enum.map(fn [id, name] -> {id, name} end)
+        Prestige.execute("select * from users") |> Enum.map(fn [id, name] -> {id, name} end)
 
       assert result == [{1, "Brian"}, {2, "Shannon"}]
     end
 
     test "can execute a query and access data as map" do
       result =
-        Prestodb.execute("select * from users", by_names: true)
+        Prestige.execute("select * from users", by_names: true)
         |> Enum.map(fn row -> {row["id"], row["name"]} end)
 
       assert result == [{1, "Brian"}, {2, "Shannon"}]
@@ -55,7 +55,7 @@ defmodule PrestodbTest do
       )
     end)
 
-    Prestodb.execute("select * from users",
+    Prestige.execute("select * from users",
       catalog: "hive",
       schema: "people",
       session: "session value"
@@ -99,7 +99,7 @@ defmodule PrestodbTest do
 
     test "works when enumerated over" do
       result =
-        Prestodb.execute("select * from users")
+        Prestige.execute("select * from users")
         |> Enum.map(fn [id, name] -> {id, name} end)
 
       assert result == [
@@ -112,7 +112,7 @@ defmodule PrestodbTest do
 
     test "works when enumerated over by names" do
       result =
-        Prestodb.execute("select * from users", by_names: true)
+        Prestige.execute("select * from users", by_names: true)
         |> Enum.map(fn row -> {row["id"], row["name"]} end)
 
       assert result == [
@@ -124,7 +124,7 @@ defmodule PrestodbTest do
     end
 
     test "can all be fetched at once" do
-      result = Prestodb.execute("select * from users") |> Prestodb.prefetch()
+      result = Prestige.execute("select * from users") |> Prestige.prefetch()
 
       assert result == [
                [1, "Tyler"],
@@ -135,7 +135,7 @@ defmodule PrestodbTest do
     end
 
     test "can all be fetched and mapped by name" do
-      result = Prestodb.execute("select * from users", by_names: true) |> Prestodb.prefetch()
+      result = Prestige.execute("select * from users", by_names: true) |> Prestige.prefetch()
 
       assert result == [
                %{"id" => 1, "name" => "Tyler"},
@@ -178,7 +178,7 @@ defmodule PrestodbTest do
       end
     end)
 
-    result = Prestodb.execute("select * from users") |> Prestodb.prefetch()
+    result = Prestige.execute("select * from users") |> Prestige.prefetch()
 
     assert result == [
              [1, "Tyler"],

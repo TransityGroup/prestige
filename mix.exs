@@ -1,9 +1,9 @@
-defmodule Prestodb.MixProject do
+defmodule Prestige.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :prestodb,
+      app: :prestige,
       version: "0.1.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
@@ -15,7 +15,7 @@ defmodule Prestodb.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Prestodb.Application, []}
+      mod: {Prestige.Application, []}
     ]
   end
 

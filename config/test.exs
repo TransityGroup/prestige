@@ -1,5 +1,5 @@
 use Mix.Config
 
-# config :tesla, adapter: Prestodb.Tesla.Mock
+# config :tesla, adapter: Prestige.Tesla.Mock
 
-config :prestodb, base_url: "http://localhost:8123"
+config :prestige, base_url: "http://localhost:8123"
