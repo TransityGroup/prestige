@@ -1,6 +1,6 @@
-defmodule Prestodb.Middleware.Retry do
+defmodule Prestige.Middleware.Retry do
   @behaviour Tesla.Middleware
-  
+
   @defaults [
     delay: 1000,
     max_retries: 5

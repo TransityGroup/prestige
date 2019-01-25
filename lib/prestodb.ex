@@ -1,5 +1,5 @@
-defmodule Prestodb do
-  defdelegate execute(statement, opts \\ []), to: Prestodb.Statement
+defmodule Prestige do
+  defdelegate execute(statement, opts \\ []), to: Prestige.Statement
 
-  defdelegate prefetch(result), to: Prestodb.Statement
+  defdelegate prefetch(result), to: Prestige.Statement
 end

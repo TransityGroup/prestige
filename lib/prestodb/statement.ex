@@ -1,4 +1,4 @@
-defmodule Prestodb.Statement do
+defmodule Prestige.Statement do
   use Tesla
 
   defmodule Result do
@@ -22,7 +22,7 @@ defmodule Prestodb.Statement do
             {:done, acc}
 
           false ->
-            Prestodb.Statement.advance(result)
+            Prestige.Statement.advance(result)
             |> reduce({:cont, acc}, fun)
         end
       end
@@ -43,9 +43,9 @@ defmodule Prestodb.Statement do
     end
   end
 
-  plug Tesla.Middleware.BaseUrl, Application.get_env(:prestodb, :base_url)
+  plug Tesla.Middleware.BaseUrl, Application.get_env(:prestige, :base_url)
   plug Tesla.Middleware.Headers, [{"X-Presto-User", "bbalser"}]
-  plug Prestodb.Middleware.Retry, delay: 100, max_retries: 5
+  plug Prestige.Middleware.Retry, delay: 100, max_retries: 5
   plug Tesla.Middleware.DecodeJson
 
   def execute(statement, opts \\ []) do

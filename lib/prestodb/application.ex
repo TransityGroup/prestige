@@ -1,4 +1,4 @@
-defmodule Prestodb.Application do
+defmodule Prestige.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -8,13 +8,13 @@ defmodule Prestodb.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      # Starts a worker by calling: Prestodb.Worker.start_link(arg)
-      # {Prestodb.Worker, arg}
+      # Starts a worker by calling: Prestige.Worker.start_link(arg)
+      # {Prestige.Worker, arg}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Prestodb.Supervisor]
+    opts = [strategy: :one_for_one, name: Prestige.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
