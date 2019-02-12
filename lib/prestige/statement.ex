@@ -44,7 +44,7 @@ defmodule Prestige.Statement do
   end
 
   plug Tesla.Middleware.BaseUrl, Application.get_env(:prestige, :base_url)
-  plug Tesla.Middleware.Headers, [{"X-Presto-User", "bbalser"}]
+  plug Tesla.Middleware.Headers, [{"X-Presto-User", "bbalser"}, {"content-type", "text/plain"}]
   plug Prestige.Middleware.Retry, delay: 100, max_retries: 5
   plug Tesla.Middleware.DecodeJson
 
