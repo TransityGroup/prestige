@@ -1,3 +1,3 @@
 use Mix.Config
 
-config :prestige, base_url: "https://presto.smrt-813.sandbox.internal.smartcolumbusos.com"
+config :prestige, base_url: "https://presto.dev.internal.smartcolumbusos.com"
