@@ -60,6 +60,7 @@ defmodule PrestigeTest do
       schema: "people",
       session: "session value"
     )
+    |> Stream.run()
   end
 
   describe "when given a multi document response" do
