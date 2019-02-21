@@ -17,7 +17,7 @@ defmodule Prestige.Statement do
 
   defp initial_accumulator(statement, opts) do
     {by_names, header_opts} = Keyword.get_and_update(opts, :by_names, fn _ -> :pop end)
-    headers = Enum.map(header_opts, &create_header/1)
+    headers = create_headers(header_opts) |> IO.inspect
 
     %{response: post("/v1/statement", statement, headers: headers), by_names: by_names || false}
   end
@@ -49,6 +49,12 @@ defmodule Prestige.Statement do
     |> Enum.map(fn col -> col["name"] end)
     |> Enum.zip(row)
     |> Enum.into(%{})
+  end
+
+  defp create_headers(opts) do
+    Application.get_env(:prestige, :headers)
+    |> Keyword.merge(opts)
+    |> Enum.map(&create_header/1)
   end
 
   defp create_header({name, value}) when is_atom(name) do
