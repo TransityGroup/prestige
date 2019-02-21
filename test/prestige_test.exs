@@ -63,6 +63,22 @@ defmodule PrestigeTest do
     |> Stream.run()
   end
 
+  test "sends default headers values from application environment", %{bypass: bypass} do
+    Bypass.expect(bypass, "POST", "/v1/statement", fn conn ->
+      assert ["bbalser"] == Plug.Conn.get_req_header(conn, "x-presto-user")
+      assert ["dcat"] == Plug.Conn.get_req_header(conn, "x-presto-catalog")
+      assert ["dschema"] == Plug.Conn.get_req_header(conn, "x-presto-schema")
+
+      presto_response(conn,
+        columns: ["id", "name"],
+        data: [
+          [1, "Brian"]
+        ])
+    end)
+
+    Prestige.execute("select * from users") |> Stream.run()
+  end
+
   describe "when given a multi document response" do
     setup %{bypass: bypass} do
       Bypass.expect_once(bypass, "POST", "/v1/statement", fn conn ->
