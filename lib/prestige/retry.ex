@@ -33,6 +33,6 @@ defmodule Prestige.Middleware.Retry do
 
   defp sleep_and_retry(env, next, delay, retries) do
     :timer.sleep(delay)
-    retry(env, next, delay, retries-1)
+    retry(env, next, delay, retries - 1)
   end
 end

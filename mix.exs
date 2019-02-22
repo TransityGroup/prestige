@@ -25,8 +25,8 @@ defmodule Prestige.MixProject do
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.15"},
       {:jason, "~> 1.1"},
-      {:mox, "~> 0.4.0", only: :test},
-      {:bypass, "~> 1.0", only: :test}
+      {:bypass, "~> 1.0", only: :test},
+      {:temporary_env, "~> 2.0", only: :test}
     ]
   end
 end

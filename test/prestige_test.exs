@@ -1,5 +1,6 @@
 defmodule PrestigeTest do
   use ExUnit.Case
+  use TemporaryEnv
 
   setup do
     [bypass: Bypass.open(port: 8123)]
@@ -25,18 +26,33 @@ defmodule PrestigeTest do
     end
 
     test "can execute a query and return data as enumerable" do
-      result =
-        Prestige.execute("select * from users") |> Enum.map(fn [id, name] -> {id, name} end)
+      result = Prestige.execute("select * from users") |> Enum.map(fn [id, name] -> {id, name} end)
 
       assert result == [{1, "Brian"}, {2, "Shannon"}]
     end
 
     test "can execute a query and access data as map" do
-      result =
-        Prestige.execute("select * from users", by_names: true)
-        |> Enum.map(fn row -> {row["id"], row["name"]} end)
+      result = Prestige.execute("select * from users", by_names: true) |> Prestige.prefetch()
+      assert [%{"id" => 1, "name" => "Brian"}, %{"id" => 2, "name" => "Shannon"}] == result
+    end
 
-      assert result == [{1, "Brian"}, {2, "Shannon"}]
+    test "can execute a query and access data as map, using rows_as_maps" do
+      result = Prestige.execute("select * from users", rows_as_maps: true) |> Prestige.prefetch()
+      assert [%{"id" => 1, "name" => "Brian"}, %{"id" => 2, "name" => "Shannon"}] == result
+    end
+
+    test "can execute a query and access data as map with rows_as_maps set at global level" do
+      TemporaryEnv.put :prestige, :rows_as_maps, true do
+        result = Prestige.execute("select * from users") |> Prestige.prefetch()
+        assert [%{"id" => 1, "name" => "Brian"}, %{"id" => 2, "name" => "Shannon"}] == result
+      end
+    end
+
+    test "can execute a query and override global rows_as_maps config" do
+      TemporaryEnv.put :prestige, :rows_as_maps, true do
+        result = Prestige.execute("select * from users", rows_as_maps: false) |> Prestige.prefetch()
+        assert [[1, "Brian"], [2, "Shannon"]] == result
+      end
     end
   end
 
@@ -63,20 +79,35 @@ defmodule PrestigeTest do
     |> Stream.run()
   end
 
-  test "sends default headers values from application environment", %{bypass: bypass} do
-    Bypass.expect(bypass, "POST", "/v1/statement", fn conn ->
-      assert ["bbalser"] == Plug.Conn.get_req_header(conn, "x-presto-user")
-      assert ["dcat"] == Plug.Conn.get_req_header(conn, "x-presto-catalog")
-      assert ["dschema"] == Plug.Conn.get_req_header(conn, "x-presto-schema")
+  describe "with default values set in application env" do
+    setup %{bypass: bypass} do
+      Bypass.expect(bypass, "POST", "/v1/statement", fn conn ->
+        assert ["bbalser"] == Plug.Conn.get_req_header(conn, "x-presto-user")
+        assert ["dcat"] == Plug.Conn.get_req_header(conn, "x-presto-catalog")
+        assert ["dschema"] == Plug.Conn.get_req_header(conn, "x-presto-schema")
 
-      presto_response(conn,
-        columns: ["id", "name"],
-        data: [
-          [1, "Brian"]
-        ])
-    end)
+        presto_response(conn,
+          columns: ["id", "name"],
+          data: [
+            [1, "Brian"]
+          ]
+        )
+      end)
 
-    Prestige.execute("select * from users") |> Stream.run()
+      :ok
+    end
+
+    test "sends default headers values from application environment" do
+      TemporaryEnv.put :prestige, :headers, user: "bbalser", catalog: "dcat", schema: "dschema" do
+        Prestige.execute("select * from users") |> Stream.run()
+      end
+    end
+
+    test "can be overriden by parameters passed to execute" do
+      TemporaryEnv.put :prestige, :headers, user: "johnson", catalog: "cota", schema: "dschema" do
+        Prestige.execute("select * from users", user: "bbalser", catalog: "dcat") |> Stream.run()
+      end
+    end
   end
 
   describe "when given a multi document response" do
@@ -127,9 +158,9 @@ defmodule PrestigeTest do
              ]
     end
 
-    test "works when enumerated over by names" do
+    test "works when enumerated as maps" do
       result =
-        Prestige.execute("select * from users", by_names: true)
+        Prestige.execute("select * from users", rows_as_maps: true)
         |> Enum.map(fn row -> {row["id"], row["name"]} end)
 
       assert result == [
@@ -152,7 +183,7 @@ defmodule PrestigeTest do
     end
 
     test "can all be fetched and mapped by name" do
-      result = Prestige.execute("select * from users", by_names: true) |> Prestige.prefetch()
+      result = Prestige.execute("select * from users", rows_as_maps: true) |> Prestige.prefetch()
 
       assert result == [
                %{"id" => 1, "name" => "Tyler"},
