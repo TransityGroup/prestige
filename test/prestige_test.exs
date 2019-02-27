@@ -239,12 +239,13 @@ defmodule PrestigeTest do
   defp presto_response(conn, opts) do
     body = %{
       "stats" => %{"state" => Keyword.get(opts, :state, "FINISHED")},
-      "columns" => Keyword.get(opts, :columns, []) |> Enum.map(fn col -> %{"name" => col} end),
+      "columns" => opts |> Keyword.get(:columns, []) |> Enum.map(fn col -> %{"name" => col} end),
       "data" => Keyword.get(opts, :data, []),
       "nextUri" => Keyword.get(opts, :next_uri)
     }
 
-    Plug.Conn.put_resp_header(conn, "content-type", "application/json")
+    conn
+    |> Plug.Conn.put_resp_header("content-type", "application/json")
     |> Plug.Conn.resp(200, Jason.encode!(body))
   end
 end

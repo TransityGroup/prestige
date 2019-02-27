@@ -182,7 +182,8 @@ defmodule Prestige.ArrayTest do
       "warnings" => []
     }
 
-    Plug.Conn.put_resp_header(conn, "content-type", "application/json")
+    conn
+    |> Plug.Conn.put_resp_header("content-type", "application/json")
     |> Plug.Conn.resp(200, Jason.encode!(body))
   end
 end

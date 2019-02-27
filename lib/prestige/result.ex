@@ -1,7 +1,11 @@
 defmodule Prestige.Result do
+  @moduledoc """
+  Handles transforming result from presto into desired datastructure
+  """
   def transform({:ok, %Tesla.Env{status: 200, body: body}}, rows_as_maps) do
     data =
-      Map.get(body, "data", [])
+      body
+      |> Map.get("data", [])
       |> Enum.map(&transform_row(&1, Map.get(body, "columns", []), rows_as_maps))
 
     {data, %{next_uri: body["nextUri"], rows_as_maps: rows_as_maps}}
@@ -38,7 +42,8 @@ defmodule Prestige.Result do
          schema: %{"rawType" => "row", "literalArguments" => literal_arguments, "typeArguments" => type_arguments},
          value: values
        }) do
-    Enum.zip([literal_arguments, type_arguments, values])
+    [literal_arguments, type_arguments, values]
+    |> Enum.zip()
     |> Enum.map(fn {name, schema, value} -> %{name: name, schema: schema, value: value} end)
     |> Enum.map(&transform_column/1)
     |> Map.new()

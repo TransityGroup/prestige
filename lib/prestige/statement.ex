@@ -1,4 +1,7 @@
 defmodule Prestige.Statement do
+  @moduledoc """
+  Handles the request response setup for presto
+  """
   use Tesla
   alias Prestige.Result
 
@@ -21,7 +24,7 @@ defmodule Prestige.Statement do
   end
 
   defp initial_accumulator(statement, opts) do
-    headers = Keyword.drop(opts, [:rows_as_maps, :by_names]) |> create_headers()
+    headers = opts |> Keyword.drop([:rows_as_maps, :by_names]) |> create_headers()
 
     %{response: post("/v1/statement", statement, headers: headers), rows_as_maps: rows_as_maps?(opts)}
   end
