@@ -17,7 +17,7 @@ node('infrastructure') {
 
         scos.doStageIf(scos.changeset.isRelease, "Publish") {
             withCredentials([string(credentialsId: 'hex-write', variable: 'HEX_API_KEY')]) {
-                image.run('--rm', 'mix hex.publish --yes')
+                image.run('--rm -e HEX_API_KEY=$HEX_API_KEY', 'mix hex.publish --yes')
             }
         }
     }
