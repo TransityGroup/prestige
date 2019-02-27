@@ -5,12 +5,20 @@ library(
                           credentialsId: 'jenkins-github-user'])
 )
 
+def image
+
 node('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
 
         stage('Build') {
-            docker.build("prestige:${env.GIT_COMMIT_HASH}")
+            image = docker.build("prestige:${env.GIT_COMMIT_HASH}")
+        }
+
+        scos.doStageIf(scos.changeset.isRelease, "Publish") {
+            withCredentials([string(credentialsId: 'hex-write', variable: 'HEX_API_KEY')]) {
+                image.run('--rm', 'mix hex.publish --yes')
+            }
         }
     }
 }
