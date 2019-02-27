@@ -1,4 +1,8 @@
 defmodule Prestige.Middleware.Retry do
+  @moduledoc """
+  Tesla plug that will retry the http request when an error or 503 status code is returned.
+  Will retry for a configurable amount of time
+  """
   @behaviour Tesla.Middleware
 
   @defaults [
@@ -33,6 +37,6 @@ defmodule Prestige.Middleware.Retry do
 
   defp sleep_and_retry(env, next, delay, retries) do
     :timer.sleep(delay)
-    retry(env, next, delay, retries-1)
+    retry(env, next, delay, retries - 1)
   end
 end
