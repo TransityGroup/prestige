@@ -20,7 +20,7 @@ defmodule Prestige.Statement do
   end
 
   def prefetch(result) do
-    Enum.map(result, fn x -> x end)
+    Enum.to_list(result)
   end
 
   defp initial_accumulator(statement, opts) do

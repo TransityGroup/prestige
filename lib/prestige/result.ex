@@ -2,6 +2,17 @@ defmodule Prestige.Result do
   @moduledoc """
   Handles transforming result from presto into desired datastructure
   """
+
+  def transform({:ok, %Tesla.Env{status: 200, body: %{"error" => error}}}, _rows_as_maps) do
+    raise Prestige.Error,
+      message: error["message"],
+      code: error["errorCode"],
+      location: error["errorLocation"],
+      name: error["errorName"],
+      type: error["errorType"],
+      stack: get_in(error, ["failureInfo", "stack"])
+  end
+
   def transform({:ok, %Tesla.Env{status: 200, body: body}}, rows_as_maps) do
     data =
       body
@@ -9,6 +20,10 @@ defmodule Prestige.Result do
       |> Enum.map(&transform_row(&1, Map.get(body, "columns", []), rows_as_maps))
 
     {data, %{next_uri: body["nextUri"], rows_as_maps: rows_as_maps}}
+  end
+
+  def transform({:ok, %Tesla.Env{status: 400, body: body}}, _rows_as_maps) do
+    raise Prestige.BadRequestError, message: body
   end
 
   defp transform_row(row, _columns, false), do: row
