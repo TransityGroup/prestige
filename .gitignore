@@ -22,3 +22,5 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 prestodb-*.tar
 
+# Ignore the frontend-independent IDE "smartness" server for Elixir.
+.elixir_ls/

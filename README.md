@@ -1,38 +1,62 @@
 # Prestige
 
-**TODO: Add description**
+A middleware layer for the Presto database
+
+Documentation: [hexdocs](https://smartcolumbus_os.hexdocs.pm/prestige/)
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `prestige` to your list of dependencies in `mix.exs`:
+Prestige can be installed by adding `prestige` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:prestige, "~> 0.3.0"}
+    {:prestige, "~> 0.3.1"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/prestige](https://hexdocs.pm/prestige).
+## Running tests
+Clone the repo and fetch its dependencies:
 
+```
+$ git clone https://github.com/smartcolumbusos/prestige
+$ cd prestige
+$ mix deps.get
+$ mix test
+```
 
-## Testing
+## Example Usage
 
 ### Adding Data to Presto
 
-`create table memory.default.monkeys ( id bigint, stuff array(row(name varchar, color varchar)));`
+Create table:
 
-`insert into memory.default.monkeys(id, stuff) values(1, array[row('George','black'), row('James','red')]);`
+```
+create_statement = "create table memory.default.monkeys ( id bigint, stuff array(row(name varchar, color varchar)))"
+Prestige.execute(create_statement, user: "prestouser") |> Stream.run()
+```
 
+Insert data:
 
-`create table memory.default.fruit ( id bigint, stuff array(bigint));`
+```
+insert_statement = "insert into memory.default.monkeys(id, stuff) values(1, array[row('George','black'), row('James','red')])"
+Prestige.execute(insert_statement, user: "prestouser") |> Stream.run()
+```
 
-`insert into memory.default.fruit(id, stuff) values(1, array[1,2,3]);`
+Select data:
+```
+iex> Prestige.execute("select * from memory.default.monkeys", user: "prestouser", by_names: true) |> Prestige.prefetch
+[
+  %{
+    "id" => 1,
+    "stuff" => [
+      %{"color" => "black", "name" => "George"},
+      %{"color" => "red", "name" => "James"}
+    ]
+  }
+]
+```
 
-### Getting data back through IEX
-
-`Prestige.execute("select * from memory.default.fruit", user: "bbalser", by_names: true) |> Prestige.prefetch`
+## License
+Released under [Apache 2 license](https://github.com/SmartColumbusOS/prestige/blob/master/LICENSE).

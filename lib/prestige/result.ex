@@ -3,6 +3,9 @@ defmodule Prestige.Result do
   Handles transforming result from presto into desired datastructure
   """
 
+  @doc """
+  Transforms a successful presto select query into a map
+  """
   def transform({:ok, %Tesla.Env{status: 200, body: %{"error" => error}}}, _rows_as_maps) do
     raise Prestige.Error,
       message: error["message"],

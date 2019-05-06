@@ -2,6 +2,16 @@ defmodule Prestige.Middleware.Retry do
   @moduledoc """
   Tesla plug that will retry the http request when an error or 503 status code is returned.
   Will retry for a configurable amount of time
+
+  Options:
+
+      * `:max_retries` - Override amount of retry attempts (default: 5)
+      * `:delay` - Delay between requests in milliseconds (default: 1000ms)
+
+  ## Examples
+
+      `plug(Prestige.Middleware.Retry, delay: 100, max_retries: 5)`
+
   """
   @behaviour Tesla.Middleware
 
