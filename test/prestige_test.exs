@@ -6,6 +6,28 @@ defmodule PrestigeTest do
     [bypass: Bypass.open(port: 8123)]
   end
 
+  describe "Statement doctest" do
+    setup %{bypass: bypass} do
+      Bypass.expect(bypass, "POST", "/v1/statement", fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        assert "select * from users" == body
+
+        presto_response(conn,
+          state: "FINISHED",
+          columns: ["id", "name"],
+          data: [
+            [1, "Brian"],
+            [2, "Shannon"]
+          ]
+        )
+      end)
+
+      :ok
+    end
+
+    doctest Prestige
+  end
+
   describe "when given a single response" do
     setup %{bypass: bypass} do
       Bypass.expect(bypass, "POST", "/v1/statement", fn conn ->

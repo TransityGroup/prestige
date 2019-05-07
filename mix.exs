@@ -4,11 +4,12 @@ defmodule Prestige.MixProject do
   def project do
     [
       app: :prestige,
-      version: "0.3.0",
+      version: "0.3.1",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
+      docs: docs(),
       description: description(),
       source_url: "https//www.github.com/SmartColumbusOS"
     ]
@@ -43,6 +44,16 @@ defmodule Prestige.MixProject do
       organization: "smartcolumbus_os",
       licenses: ["AllRightsReserved"],
       links: %{"GitHub" => "https://www.github.com/SmartColumbusOS/scos_ex"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "README",
+      source_url: "https://github.com/SmartColumbusOS/prestige",
+      extras: [
+        "README.md"
+      ]
     ]
   end
 end
