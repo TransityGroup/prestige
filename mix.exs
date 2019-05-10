@@ -11,7 +11,7 @@ defmodule Prestige.MixProject do
       package: package(),
       docs: docs(),
       description: description(),
-      source_url: "https//www.github.com/SmartColumbusOS"
+      source_url: "https://github.com/smartcitiesdata/prestige"
     ]
   end
 
@@ -39,21 +39,21 @@ defmodule Prestige.MixProject do
     "A Elixir client for Prestodb"
   end
 
-  defp package do
-    [
-      organization: "smartcolumbus_os",
-      licenses: ["AllRightsReserved"],
-      links: %{"GitHub" => "https://www.github.com/SmartColumbusOS/scos_ex"}
-    ]
-  end
-
   defp docs do
     [
       main: "README",
-      source_url: "https://github.com/SmartColumbusOS/prestige",
+      source_url: "https://github.com/smartcitiesdata/prestige",
       extras: [
         "README.md"
       ]
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["smartcitiesdata"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => "https://github.com/smartcitiesdata/prestige"}
     ]
   end
 end
