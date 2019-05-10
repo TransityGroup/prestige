@@ -36,12 +36,12 @@ defmodule Prestige.MixProject do
   end
 
   defp description do
-    "A Elixir client for Prestodb"
+    "A middleware layer for the Presto database"
   end
 
   defp docs do
     [
-      main: "README",
+      main: "readme",
       source_url: "https://github.com/smartcitiesdata/prestige",
       extras: [
         "README.md"
