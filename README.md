@@ -1,3 +1,6 @@
+[![Master](https://travis-ci.org/smartcitiesdata/prestige.svg?branch=master)](https://travis-ci.org/smartcitiesdata/prestige)
+[![Hex.pm Version](http://img.shields.io/hexpm/v/prestige.svg?style=flat)](https://hex.pm/packages/prestige)
+
 # Prestige
 
 A middleware layer for the Presto database
