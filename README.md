@@ -14,7 +14,7 @@ Prestige can be installed by adding `prestige` to your list of dependencies in `
 ```elixir
 def deps do
   [
-    {:prestige, "~> 0.3.1"}
+    {:prestige, "~> 0.3.2"}
   ]
 end
 ```
