@@ -5,7 +5,7 @@
 
 A middleware layer for the Presto database
 
-Documentation: [hexdocs](https://smartcolumbus_os.hexdocs.pm/prestige/)
+Documentation: [hexdocs](https://hexdocs.pm/prestige)
 
 ## Installation
 
@@ -14,7 +14,7 @@ Prestige can be installed by adding `prestige` to your list of dependencies in `
 ```elixir
 def deps do
   [
-    {:prestige, "~> 0.3.1"}
+    {:prestige, "~> 0.3.2"}
   ]
 end
 ```
@@ -23,7 +23,7 @@ end
 Clone the repo and fetch its dependencies:
 
 ```
-$ git clone https://github.com/smartcolumbusos/prestige
+$ git clone https://github.com/smartcitiesdata/prestige
 $ cd prestige
 $ mix deps.get
 $ mix test
@@ -62,4 +62,4 @@ iex> Prestige.execute("select * from memory.default.monkeys", user: "prestouser"
 ```
 
 ## License
-Released under [Apache 2 license](https://github.com/SmartColumbusOS/prestige/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/smartcitiesdata/prestige/blob/master/LICENSE).
