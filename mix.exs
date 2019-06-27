@@ -4,8 +4,8 @@ defmodule Prestige.MixProject do
   def project do
     [
       app: :prestige,
-      version: "0.3.2",
-      elixir: "~> 1.7",
+      version: "0.3.3",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
@@ -30,8 +30,9 @@ defmodule Prestige.MixProject do
       {:jason, "~> 1.1"},
       {:bypass, "~> 1.0", only: :test},
       {:temporary_env, "~> 2.0", only: :test},
-      {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.19", only: :dev}
+      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.19", only: :dev},
+      {:husky, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 
