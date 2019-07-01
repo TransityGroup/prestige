@@ -6,8 +6,10 @@ defmodule Prestige.NestedArrayTest do
   end
 
   test "nested rows with arrays of rows become nested maps", %{bypass: bypass} do
+    data = [[1, ["George", [["Bob", 7], ["Joe", 14], ["Lou", 2]]]]]
+
     Bypass.expect(bypass, "POST", "/v1/statement", fn conn ->
-      presto_response(conn)
+      presto_response(conn, data)
     end)
 
     actual =
@@ -31,7 +33,28 @@ defmodule Prestige.NestedArrayTest do
     assert expected == actual
   end
 
-  defp presto_response(conn) do
+  test "top level column with with nils", %{bypass: bypass} do
+    data = [[1, nil]]
+
+    Bypass.expect(bypass, "POST", "/v1/statement", fn conn ->
+      presto_response(conn, data)
+    end)
+
+    actual =
+      Prestige.execute("select * from something", rows_as_maps: true)
+      |> Prestige.prefetch()
+
+    expected = [
+      %{
+        "id" => 1,
+        "stuff" => nil
+      }
+    ]
+
+    assert expected == actual
+  end
+
+  defp presto_response(conn, data) do
     body = %{
       "addedPreparedStatements" => %{},
       "columns" => [
@@ -157,7 +180,7 @@ defmodule Prestige.NestedArrayTest do
           }
         }
       ],
-      "data" => [[1, ["George", [["Bob", 7], ["Joe", 14], ["Lou", 2]]]]],
+      "data" => data,
       "deallocatedPreparedStatements" => [],
       "id" => "20190223_064615_00031_tf6fe",
       "infoUri" => "http://localhost:8080/ui/query.html?20190223_064615_00031_tf6fe",

@@ -57,6 +57,12 @@ defmodule Prestige.Result do
   end
 
   defp transform_value(%{
+         schema: %{"rawType" => "row", "literalArguments" => _, "typeArguments" => _},
+         value: nil
+       }),
+       do: nil
+
+  defp transform_value(%{
          schema: %{"rawType" => "row", "literalArguments" => literal_arguments, "typeArguments" => type_arguments},
          value: values
        }) do
