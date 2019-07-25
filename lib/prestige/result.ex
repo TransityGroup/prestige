@@ -29,6 +29,10 @@ defmodule Prestige.Result do
     raise Prestige.BadRequestError, message: body
   end
 
+  def transform({:error, :econnrefused}, _) do
+    raise Prestige.ConnectionError, message: "Error connecting to Presto.", code: :econnrefused
+  end
+
   defp transform_row(row, _columns, false), do: row
 
   defp transform_row(row, columns, true) do
