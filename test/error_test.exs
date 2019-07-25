@@ -1,4 +1,5 @@
 defmodule Prestige.ErrorTest do
+  require TemporaryEnv
   use ExUnit.Case
 
   setup do
@@ -46,6 +47,15 @@ defmodule Prestige.ErrorTest do
         assert e.name == "SYNTAX_ERROR"
         assert e.type == "USER_ERROR"
         assert e.stack == ["one", "two"]
+    end
+  end
+
+  @tag capture_log: true
+  test "prestige should raise an error when it cannot connect to presto (econnrefused)", %{bypass: _bypass} do
+    TemporaryEnv.put :prestige, :base_url, "localhost:65432" do
+      assert_raise(Prestige.ConnectionError, fn ->
+        Prestige.execute("SELECT * FROM TABLES") |> Prestige.prefetch()
+      end)
     end
   end
 end

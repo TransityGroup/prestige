@@ -15,6 +15,12 @@ defmodule Prestige do
     defexception [:message]
   end
 
+  defmodule ConnectionError do
+    @moduledoc false
+
+    defexception [:message, :code]
+  end
+
   @doc """
   Executes a prepared statement against presto, returns a stream
 
