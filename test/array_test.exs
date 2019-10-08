@@ -27,6 +27,37 @@ defmodule Prestige.ArrayTest do
     assert expected == actual
   end
 
+  test "null array type fields are treated as empty arrays", %{bypass: bypass} do
+    body = %{
+      "data" => [[2, nil]],
+      "columns" => [
+        %{
+          "name" => "id",
+          "type" => "bigint",
+          "typeSignature" => %{
+            "arguments" => [],
+            "literalArguments" => [],
+            "rawType" => "bigint",
+            "typeArguments" => []
+          }
+        },
+        %{
+          "name" => "stuff",
+          "type" => "array(row(name varchar,color varchar))",
+          "typeSignature" => %{
+            "arguments" => [],
+            "literalArguments" => [],
+            "rawType" => "array",
+            "typeArguments" => []
+          }
+        }
+      ]
+    }
+
+    result = Prestige.Result.transform({:ok, %Tesla.Env{status: 200, body: body}}, true)
+    assert result == {[%{"id" => 2, "stuff" => []}], %{next_uri: nil, rows_as_maps: true}}
+  end
+
   defp presto_response(conn) do
     body = %{
       "addedPreparedStatements" => %{},
