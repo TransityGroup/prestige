@@ -43,6 +43,12 @@ defmodule Prestige.Result do
     |> Map.new()
   end
 
+  defp transform_column(%{schema: %{"rawType" => "array"}, value: nil} = column) do
+    column
+    |> Map.update(:value, [], fn _ -> [] end)
+    |> transform_column()
+  end
+
   defp transform_column(%{
          name: name,
          schema: %{"rawType" => "array", "typeArguments" => [type_argument]},
