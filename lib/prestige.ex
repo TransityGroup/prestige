@@ -3,6 +3,8 @@ defmodule Prestige do
   An elixir client for [Prestodb](http://prestodb.github.io/).
   """
 
+  alias Prestige.PrestoClient
+
   defmodule Error do
     @moduledoc false
 
@@ -45,4 +47,40 @@ defmodule Prestige do
   Converts a presto stream into a map for consumption
   """
   defdelegate prefetch(result), to: Prestige.Statement
+
+  defdelegate new_session(opts), to: Prestige.Session, as: :new
+
+  def query(session, statement, args \\ []) do
+    result =
+      PrestoClient.execute(session, "stmt", statement, args)
+      |> Enum.to_list()
+      |> collapse_results()
+
+    {:ok, result}
+  end
+
+  def stream!(session, statement, args \\ []) do
+    PrestoClient.execute(session, "stmt", statement, args)
+  end
+
+  defp collapse_results([]), do: []
+
+  defp collapse_results(results) do
+    columns = List.first(results).columns
+    rows = flatten(results)
+
+    %Prestige.Result{
+      columns: columns,
+      rows: rows
+    }
+  end
+
+  defp flatten(results) do
+    Enum.reduce(results, [], fn result, acc ->
+      Enum.reduce(result.rows, acc, fn row, acc ->
+        [row | acc]
+      end)
+    end)
+    |> Enum.reverse()
+  end
 end

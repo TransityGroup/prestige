@@ -3,6 +3,16 @@ defmodule Prestige.Result do
   Handles transforming result from presto into desired datastructure
   """
 
+  defstruct [:columns, :rows]
+
+  def as_maps(%Prestige.Result{} = result) do
+    columns = Enum.map(result.columns, fn col -> col.name end)
+
+    Enum.map(result.rows, fn row ->
+      Enum.zip(columns, row) |> Map.new()
+    end)
+  end
+
   @doc """
   Transforms a successful presto select query into a map
   """

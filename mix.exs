@@ -11,7 +11,8 @@ defmodule Prestige.MixProject do
       package: package(),
       docs: docs(),
       description: description(),
-      source_url: "https://github.com/smartcitiesdata/prestige"
+      source_url: "https://github.com/smartcitiesdata/prestige",
+      test_paths: test_paths(Mix.env())
     ]
   end
 
@@ -28,11 +29,13 @@ defmodule Prestige.MixProject do
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.15"},
       {:jason, "~> 1.1"},
+      {:db_connection, "~> 2.1"},
       {:bypass, "~> 1.0", only: :test},
       {:temporary_env, "~> 2.0", only: :test},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:husky, "~> 1.0", only: :dev, runtime: false}
+      {:husky, "~> 1.0", only: :dev, runtime: false},
+      {:divo, "~> 1.1.9", only: [:dev, :integration]}
     ]
   end
 
@@ -57,4 +60,7 @@ defmodule Prestige.MixProject do
       links: %{"GitHub" => "https://github.com/smartcitiesdata/prestige"}
     ]
   end
+
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
 end
