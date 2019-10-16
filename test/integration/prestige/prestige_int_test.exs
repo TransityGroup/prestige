@@ -42,13 +42,19 @@ defmodule Prestige.IntTest do
     assert [%{rows: [["george", 10], ["pete", 20]]}] = result
   end
 
-  test "transaction" do
+  test "rollback transaction" do
     Prestige.transaction(@session, fn session ->
       Prestige.query(session, "insert into memory.default.people(name, age) values('joe', 19)")
 
       assert [%{"name" => "joe", "age" => 19}] ==
-               Prestige.query(session, "select * from memory.default.people where name = 'joe'")
+               Prestige.query!(session, "select * from memory.default.people where name = 'joe'")
                |> Prestige.Result.as_maps()
+
+      :rollback
     end)
+
+    assert [] ==
+             Prestige.query!(@session, "select * from memory.default.people where name = 'joe'")
+             |> Prestige.Result.as_maps()
   end
 end

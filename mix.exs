@@ -29,7 +29,6 @@ defmodule Prestige.MixProject do
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.15"},
       {:jason, "~> 1.1"},
-      {:db_connection, "~> 2.1"},
       {:bypass, "~> 1.0", only: :test},
       {:temporary_env, "~> 2.0", only: :test},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},

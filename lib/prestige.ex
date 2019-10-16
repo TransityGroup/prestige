@@ -4,6 +4,7 @@ defmodule Prestige do
   """
 
   alias Prestige.PrestoClient
+  alias Prestige.Session
 
   defmodule Error do
     @moduledoc false
@@ -50,7 +51,7 @@ defmodule Prestige do
 
   defdelegate new_session(opts), to: Prestige.Session, as: :new
 
-  def query(session, statement, args \\ []) do
+  def query(%Session{} = session, statement, args \\ []) do
     result =
       PrestoClient.execute(session, "stmt", statement, args)
       |> Enum.to_list()
@@ -59,8 +60,24 @@ defmodule Prestige do
     {:ok, result}
   end
 
-  def stream!(session, statement, args \\ []) do
+  def query!(%Session{} = session, statement, args \\ []) do
+    case query(session, statement, args) do
+      {:ok, result} -> result
+      {:error, reason} -> raise reason
+    end
+  end
+
+  def stream!(%Session{} = session, statement, args \\ []) do
     PrestoClient.execute(session, "stmt", statement, args)
+  end
+
+  def transaction(%Session{} = session, function) when is_function(function, 1) do
+    session = PrestoClient.start_transaction(session)
+
+    case function.(session) do
+      :rollback -> PrestoClient.rollback(session)
+      :commit -> PrestoClient.commit(session)
+    end
   end
 
   defp collapse_results([]), do: []

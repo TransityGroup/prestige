@@ -3,7 +3,7 @@ defmodule Prestige.Result do
   Handles transforming result from presto into desired datastructure
   """
 
-  defstruct [:columns, :rows]
+  defstruct [:columns, :rows, :presto_headers]
 
   def as_maps(%Prestige.Result{} = result) do
     columns = Enum.map(result.columns, fn col -> col.name end)
