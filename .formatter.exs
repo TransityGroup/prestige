@@ -1,6 +1,9 @@
 # Used by "mix format"
 [
   inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}"],
-  locals_without_parens: [mock: 1, plug: :*],
-  line_length: 120
+  locals_without_parens: [plug: :*, session: 1, table: 1],
+  line_length: 120,
+  export: [
+    locals_without_parens: [session: 1, table: 1]
+  ]
 ]

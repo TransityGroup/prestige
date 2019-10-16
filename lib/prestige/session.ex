@@ -1,6 +1,7 @@
 defmodule Prestige.Session do
-  @enforce_keys [:host, :user]
-  defstruct [:host, :user, :transaction_id]
+  @moduledoc "TODO"
+  @enforce_keys [:url, :user]
+  defstruct [:url, :user, :transaction_id, :catalog, :schema]
 
   def new(opts) do
     struct!(__MODULE__, opts)
