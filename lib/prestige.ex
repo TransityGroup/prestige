@@ -46,7 +46,16 @@ defmodule Prestige do
   def transaction(%Session{} = session, function) when is_function(function, 1) do
     session = PrestoClient.start_transaction(session)
 
-    case function.(session) do
+    result =
+      try do
+        function.(session)
+      rescue
+        e ->
+          PrestoClient.rollback(session)
+          reraise e, __STACKTRACE__
+      end
+
+    case result do
       :commit ->
         PrestoClient.commit(session)
         :ok

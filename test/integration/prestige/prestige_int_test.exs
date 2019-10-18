@@ -80,6 +80,20 @@ defmodule Prestige.IntTest do
              |> Prestige.Result.as_maps()
   end
 
+  test "transaction should rollback when error is raised" do
+    Prestige.transaction(@session, fn s ->
+      Prestige.query(s, "insert into people(name, age) values('harry', 10)")
+      raise "something went wrong"
+      :commit
+    end)
+
+    flunk("Should have reraised the exception")
+  rescue
+    e ->
+      assert e == RuntimeError.exception(message: "something went wrong")
+      assert [] == Prestige.query!(@session, "select * from  people where name = 'harry'") |> Prestige.Result.as_maps()
+  end
+
   defp exec(statement) do
     PrestoClient.execute(@session, "stmt", statement, []) |> Enum.to_list()
   end
