@@ -26,6 +26,41 @@ defmodule Prestige do
 
   defdelegate new_session(opts), to: Prestige.Session, as: :new
 
+  def prepare(%Session{} = session, name, statement) do
+    new_session = prepare!(session, name, statement)
+    {:ok, new_session}
+  rescue
+    error -> {:error, error}
+  end
+
+  def prepare!(%Session{} = session, name, statement) do
+    PrestoClient.prepare_statement(session, name, statement)
+  end
+
+  def execute(%Session{} = session, name, args) do
+    result = execute!(session, name, args)
+    {:ok, result}
+  rescue
+    error -> {:error, error}
+  end
+
+  def execute!(%Session{} = session, name, args) do
+    PrestoClient.execute_statement(session, name, args)
+    |> Enum.to_list()
+    |> collapse_results()
+  end
+
+  def close(%Session{} = session, name) do
+    new_session = close!(session, name)
+    {:ok, new_session}
+  rescue
+    error -> {:error, error}
+  end
+
+  def close!(%Session{} = session, name) do
+    PrestoClient.close_statement(session, name)
+  end
+
   def query(%Session{} = session, statement, args \\ []) do
     result = query!(session, statement, args)
     {:ok, result}

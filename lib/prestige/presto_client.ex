@@ -1,14 +1,20 @@
 defmodule Prestige.PrestoClient do
   @moduledoc false
   alias Prestige.Session
-  alias Prestige.PrestoClient.{RequestStream, ResponseParser}
+  alias Prestige.PrestoClient.{Arguments, RequestStream, ResponseParser}
 
   @presto_transaction_id "X-Presto-Transaction-Id"
   @presto_started_transaction_id "x-presto-started-transaction-id"
+  @presto_added_prepare "x-presto-added-prepare"
 
   defmodule Request do
     @moduledoc false
-    defstruct [:session, :name, :statement, :args, :headers]
+    defstruct session: nil,
+              name: nil,
+              statement: nil,
+              args: nil,
+              headers: [],
+              prepare_statement: true
   end
 
   def execute(session, name, statement, args, headers \\ []) do
@@ -16,6 +22,58 @@ defmodule Prestige.PrestoClient do
 
     RequestStream.stream(request)
     |> ResponseParser.parse()
+  end
+
+  def prepare_statement(session, name, statement, headers \\ []) do
+    prepare_statement = "PREPARE #{name} FROM #{statement}"
+
+    request = %Request{
+      session: session,
+      name: name,
+      statement: prepare_statement,
+      prepare_statement: false,
+      headers: headers
+    }
+
+    [result] =
+      RequestStream.stream(request)
+      |> ResponseParser.parse()
+      |> Enum.to_list()
+
+    prepared_header = get_header(result.presto_headers, @presto_added_prepare)
+    Session.add_prepared_statement(session, prepared_header)
+  end
+
+  def execute_statement(session, name, args, headers \\ []) do
+    execute_statement = "EXECUTE #{name} USING #{Arguments.to_arg_list(args)}"
+
+    request = %Request{
+      session: session,
+      name: name,
+      statement: execute_statement,
+      prepare_statement: false,
+      headers: headers
+    }
+
+    RequestStream.stream(request)
+    |> ResponseParser.parse()
+  end
+
+  def close_statement(session, name) do
+    deallocate_statement = "DEALLOCATE PREPARE #{name}"
+
+    request = %Request{
+      session: session,
+      statement: deallocate_statement,
+      prepare_statement: false
+    }
+
+    [_result] =
+      RequestStream.stream(request)
+      |> ResponseParser.parse()
+      |> Enum.to_list()
+
+    Session.remove_prepared_statement(session, name)
   end
 
   def start_transaction(session) do

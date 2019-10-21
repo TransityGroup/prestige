@@ -3,10 +3,13 @@ defmodule Prestige.PrestoClient.RequestStream do
   use Tesla
 
   alias Prestige.PrestoClient.Request
+  alias Prestige.PrestoClient.Arguments
 
   plug Tesla.Middleware.Headers, [{"content-type", "text/plain"}]
   plug Tesla.Middleware.Logger, log_level: :debug
   plug Tesla.Middleware.DecodeJson
+
+  @statement_path "/v1/statement"
 
   defmodule NextUri do
     @moduledoc false
@@ -25,8 +28,16 @@ defmodule Prestige.PrestoClient.RequestStream do
     )
   end
 
+  defp make_request(%Request{session: session, prepare_statement: false} = request) do
+    url = session.url <> @statement_path
+    headers = create_headers(session, nil, request.headers)
+
+    post(url, request.statement, headers: headers)
+    |> validate()
+  end
+
   defp make_request(%Request{session: session} = request) do
-    url = session.url <> "/v1/statement"
+    url = session.url <> @statement_path
     prepared_statement = request.name <> "=" <> URI.encode_www_form(request.statement)
     execute_statement = execute_statement(request.name, request.args)
     headers = create_headers(session, prepared_statement, request.headers)
@@ -61,13 +72,13 @@ defmodule Prestige.PrestoClient.RequestStream do
   end
 
   defp execute_statement(name, args) do
-    "EXECUTE #{name} USING #{to_arg_list(args)}"
+    "EXECUTE #{name} USING #{Arguments.to_arg_list(args)}"
   end
 
   defp create_headers(session, prepared_statement, custom_headers) do
     [
       header("X-Presto-User", session.user),
-      header("X-Presto-Prepared-Statement", prepared_statement),
+      prepared_statement_header(session, prepared_statement),
       header("X-Presto-Catalog", session.catalog),
       header("X-Presto-Schema", session.schema),
       header("X-Presto-Transaction-Id", session.transaction_id)
@@ -84,14 +95,15 @@ defmodule Prestige.PrestoClient.RequestStream do
     {key, value}
   end
 
-  defp to_arg_list(args) do
-    args
-    |> Enum.map(fn arg ->
-      case is_binary(arg) do
-        true -> "'" <> arg <> "'"
-        false -> to_string(arg)
-      end
-    end)
-    |> Enum.join(",")
+  defp prepared_statement_header(%{prepared_statements: []}, nil) do
+    []
+  end
+
+  defp prepared_statement_header(session, nil) do
+    header("X-Presto-Prepared-Statement", Enum.join(session.prepared_statements, ","))
+  end
+
+  defp prepared_statement_header(session, prepared_statement) do
+    header("X-Presto-Prepared-Statement", Enum.join([prepared_statement | session.prepared_statements], ","))
   end
 end
