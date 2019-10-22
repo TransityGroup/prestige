@@ -33,8 +33,8 @@ defmodule Prestige.MixProject do
       {:temporary_env, "~> 2.0", only: :test},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:husky, "~> 1.0", only: :dev, runtime: false},
-      {:divo, "~> 1.1.9", only: [:dev, :integration]}
+      {:divo, "~> 1.1.9", only: [:dev, :integration]},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false}
     ]
   end
 
