@@ -2,8 +2,14 @@ defmodule Prestige.CaseTest do
   use Prestige.Case
   use Divo
 
+  @moduletag capture_log: true
+
   session url: "http://localhost:8080", user: "bbalser", catalog: "hive", schema: "default"
-  table "people(name varchar, age int)"
+
+  table "people", %{
+    "name" => "varchar",
+    "age" => "int"
+  }
 
   test "brian", %{session: session} do
     Prestige.query!(session, "insert into people(name, age) values('Brian', 21)")

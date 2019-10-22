@@ -5,7 +5,10 @@ defmodule PreparedTest do
   @moduletag capture_log: true
 
   session url: "http://localhost:8080", user: "bbalser", catalog: "hive", schema: "default"
-  table "cakes(id int, name varchar)"
+  table "cakes", %{
+    "id" => "int",
+    "name" => "varchar"
+  }
 
   test "can prepared and use a prepared statement", %{session: session} do
     {:ok, prepared_session} = Prestige.prepare(session, "insert_cakes", "insert into cakes(id, name) values(?, ?)")
