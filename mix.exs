@@ -4,7 +4,7 @@ defmodule Prestige.MixProject do
   def project do
     [
       app: :prestige,
-      version: "0.3.6",
+      version: "1.0.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
