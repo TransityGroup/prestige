@@ -1,7 +1,7 @@
-defmodule Prestige.PrestoClient do
+defmodule Prestige.Client do
   @moduledoc false
   alias Prestige.Session
-  alias Prestige.PrestoClient.{Arguments, RequestStream, ResponseParser}
+  alias Prestige.Client.{Arguments, RequestStream, ResponseParser}
 
   @presto_transaction_id "X-Presto-Transaction-Id"
   @presto_started_transaction_id "x-presto-started-transaction-id"
@@ -17,6 +17,7 @@ defmodule Prestige.PrestoClient do
               prepare_statement: true
   end
 
+  @spec execute(session :: Session.t(), name :: String.t(), statement :: String.t(), args :: list, headers :: list) :: Enumerable.t()
   def execute(session, name, statement, args, headers \\ []) do
     request = %Request{session: session, name: name, statement: statement, args: args, headers: headers}
 
@@ -44,6 +45,7 @@ defmodule Prestige.PrestoClient do
     Session.add_prepared_statement(session, prepared_header)
   end
 
+  @spec execute_statement(session :: Session.t(), name :: String.t(), args :: list, headers :: list) :: Enumerable.t()
   def execute_statement(session, name, args, headers \\ []) do
     execute_statement = "EXECUTE #{name} USING #{Arguments.to_arg_list(args)}"
 

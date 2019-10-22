@@ -1,10 +1,11 @@
-defmodule PreparedTest do
+defmodule PrestigeTest do
   use Prestige.Case
   use Divo
 
   @moduletag capture_log: true
 
   session url: "http://localhost:8080", user: "bbalser", catalog: "hive", schema: "default"
+
   table "cakes", %{
     "id" => "int",
     "name" => "varchar"
