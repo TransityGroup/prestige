@@ -41,7 +41,7 @@ defmodule Prestige.ColumnDefinition do
     fields =
       column
       |> add_type("row")
-      |> Map.put(sub_columns: sub_columns)
+      |> Map.put(:sub_columns, sub_columns)
 
     struct!(__MODULE__, fields)
   end

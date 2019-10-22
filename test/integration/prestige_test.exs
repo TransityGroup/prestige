@@ -1,6 +1,6 @@
 defmodule PrestigeTest do
   use Prestige.Case
-  # use Divo
+  use Divo
 
   @moduletag capture_log: true
 

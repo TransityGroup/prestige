@@ -5,6 +5,7 @@ defmodule Prestige.Client.RequestStream do
   alias Prestige.Client.{Arguments, Request}
 
   plug Tesla.Middleware.Headers, [{"content-type", "text/plain"}]
+  plug Prestige.Middleware.Retry, delay: 100, max_retries: 5
   plug Tesla.Middleware.Logger, log_level: :debug
   plug Tesla.Middleware.DecodeJson
 
