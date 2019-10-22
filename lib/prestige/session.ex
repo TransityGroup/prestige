@@ -1,6 +1,24 @@
 defmodule Prestige.Session do
-  @moduledoc "TODO"
+  @moduledoc """
+  Struct that hold connection information as well and current transactions and prepared statements.
+  Needed for all interactions with presto
+
+  Example
+
+  ```
+  session = Presto.new_session(url: "http://localhost:8080", user: "bbalser", catalog: "hive", schema: "default")
+  ```
+  """
   @enforce_keys [:url, :user]
+
+  @type t :: %Prestige.Session{
+          url: String.t(),
+          user: String.t(),
+          transaction_id: String.t(),
+          catalog: String.t(),
+          schema: String.t(),
+          prepared_statements: list(String.t())
+        }
 
   defstruct url: nil,
             user: nil,

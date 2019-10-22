@@ -1,4 +1,4 @@
-defmodule Prestige.PrestoClient.Arguments do
+defmodule Prestige.Client.Arguments do
   @moduledoc false
 
   def to_arg_list(args) do

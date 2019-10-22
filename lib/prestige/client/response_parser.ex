@@ -1,4 +1,4 @@
-defmodule Prestige.PrestoClient.ResponseParser do
+defmodule Prestige.Client.ResponseParser do
   @moduledoc false
 
   defmodule Accumulator do
@@ -81,8 +81,6 @@ defmodule Prestige.PrestoClient.ResponseParser do
   end
 
   defp transform_columns(columns) do
-    Enum.map(columns, fn %{"name" => name, "type" => type} ->
-      %Prestige.ColumnDefinition{name: name, type: type}
-    end)
+    Enum.map(columns, &Prestige.ColumnDefinition.new/1)
   end
 end

@@ -14,7 +14,7 @@ Prestige can be installed by adding `prestige` to your list of dependencies in `
 ```elixir
 def deps do
   [
-    {:prestige, "~> 0.3.6"}
+    {:prestige, "~> 1.0.0"}
   ]
 end
 ```
@@ -36,20 +36,32 @@ $ mix test
 Create table:
 
 ```
+session = Prestige.new_session(url: "http://localhost:8080", user: "bbalser")
 create_statement = "create table memory.default.monkeys ( id bigint, stuff array(row(name varchar, color varchar)))"
-Prestige.execute(create_statement, user: "prestouser") |> Stream.run()
+Prestige.query(session, create_statement)
 ```
 
 Insert data:
 
 ```
+session = Prestige.new_session(url: "http://localhost:8080", user: "bbalser")
 insert_statement = "insert into memory.default.monkeys(id, stuff) values(1, array[row('George','black'), row('James','red')])"
-Prestige.execute(insert_statement, user: "prestouser") |> Stream.run()
+Prestige.query(session, insert_statement)
+```
+
+ or 
+
+```
+session = Prestige.new_session(url: "http://localhost:8080", user: "bbalser")
+insert_statement = "insert into memory.default.monkeys(id, stuff) values(?, array[row(?,?), row(?,?)])"
+Prestige.query(session, insert_statement, [1, "George", "black", "James", "red"])
 ```
 
 Select data:
 ```
-iex> Prestige.execute("select * from memory.default.monkeys", user: "prestouser", by_names: true) |> Prestige.prefetch
+
+iex> session = Prestige.new_session(url: "http://localhost:8080", user: "bbalser")
+iex> Prestige.query!(session, "select * from memory.default.monkeys") |> Prestige.Result.as_maps()
 [
   %{
     "id" => 1,

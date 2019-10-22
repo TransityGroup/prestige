@@ -17,7 +17,8 @@ defmodule Prestige.Client do
               prepare_statement: true
   end
 
-  @spec execute(session :: Session.t(), name :: String.t(), statement :: String.t(), args :: list, headers :: list) :: Enumerable.t()
+  @spec execute(session :: Session.t(), name :: String.t(), statement :: String.t(), args :: list, headers :: list) ::
+          Enumerable.t()
   def execute(session, name, statement, args, headers \\ []) do
     request = %Request{session: session, name: name, statement: statement, args: args, headers: headers}
 
@@ -70,10 +71,9 @@ defmodule Prestige.Client do
       prepare_statement: false
     }
 
-    [_result] =
-      RequestStream.stream(request)
-      |> ResponseParser.parse()
-      |> Enum.to_list()
+    RequestStream.stream(request)
+    |> ResponseParser.parse()
+    |> Stream.run()
 
     Session.remove_prepared_statement(session, name)
   end

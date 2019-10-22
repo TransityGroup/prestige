@@ -1,5 +1,31 @@
 defmodule Prestige.Case do
-  @moduledoc "TODO"
+  @moduledoc """
+  ExUnit Case that will auto create and drop tables around the entire file and
+  create and rollback transactions around each test.
+
+  Example:
+
+  ```
+  defmodule Prestige.CaseTest do
+    use Prestige.Case
+
+    session url: "http://localhost:8080", user: "bbalser", catalog: "hive", schema: "default"
+
+    table "people", %{
+      "name" => "varchar",
+      "age" => "int"
+    }
+
+    test "transaction that will be rolled back automatically", %{session: session} do
+      Prestige.query!(session, "insert into people(name, age) values('Brian', 21)")
+
+      assert [%{"name" => "Brian"}] == Prestige.query!(session, "select name from people") |> Prestige.Result.as_maps()
+    end
+
+  end
+
+  ```
+  """
   use ExUnit.CaseTemplate
 
   using do
@@ -17,10 +43,10 @@ defmodule Prestige.Case do
       end
 
       setup %{no_tx_session: no_tx_session} do
-        session = Prestige.PrestoClient.start_transaction(no_tx_session)
+        session = Prestige.Client.start_transaction(no_tx_session)
 
         on_exit(fn ->
-          Prestige.PrestoClient.rollback(session)
+          Prestige.Client.rollback(session)
         end)
 
         [session: session]
@@ -38,7 +64,11 @@ defmodule Prestige.Case do
         Prestige.query!(session, "CREATE TABLE IF NOT EXISTS #{unquote(name)}(#{column_defs})")
 
         on_exit(fn ->
-          Prestige.query!(session, "DROP TABLE IF EXISTS #{unquote(name)}")
+          try do
+            Prestige.query!(session, "DROP TABLE IF EXISTS #{unquote(name)}")
+          rescue
+            e -> :ok
+          end
         end)
 
         :ok
