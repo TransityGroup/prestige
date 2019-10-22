@@ -1,13 +1,14 @@
-defmodule Prestige.PrestoClient.RequestStream do
+defmodule Prestige.Client.RequestStream do
   @moduledoc false
   use Tesla
 
-  alias Prestige.PrestoClient.Request
-  alias Prestige.PrestoClient.Arguments
+  alias Prestige.Client.{Arguments, Request}
 
   plug Tesla.Middleware.Headers, [{"content-type", "text/plain"}]
   plug Tesla.Middleware.Logger, log_level: :debug
   plug Tesla.Middleware.DecodeJson
+
+  adapter(Tesla.Adapter.Hackney)
 
   @statement_path "/v1/statement"
 
