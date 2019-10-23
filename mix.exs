@@ -12,7 +12,10 @@ defmodule Prestige.MixProject do
       docs: docs(),
       description: description(),
       source_url: "https://github.com/smartcitiesdata/prestige",
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      dialyzer: [
+        ignore_warnings: ".dialyzer_ignore.exs"
+      ]
     ]
   end
 
@@ -34,7 +37,7 @@ defmodule Prestige.MixProject do
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev},
       {:divo, "~> 1.1.9", only: [:dev, :integration]},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false}
     ]
   end
 
