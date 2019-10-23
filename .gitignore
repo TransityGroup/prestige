@@ -24,3 +24,5 @@ prestodb-*.tar
 
 # Ignore the frontend-independent IDE "smartness" server for Elixir.
 .elixir_ls/
+
+.plt/

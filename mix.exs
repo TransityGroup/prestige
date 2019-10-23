@@ -14,7 +14,9 @@ defmodule Prestige.MixProject do
       source_url: "https://github.com/smartcitiesdata/prestige",
       test_paths: test_paths(Mix.env()),
       dialyzer: [
-        ignore_warnings: ".dialyzer_ignore.exs"
+        ignore_warnings: ".dialyzer_ignore.exs",
+        flags: [:no_fail_call, :no_return, :no_fun_app],
+        plt_file: {:no_warn, ".plt/dialyzer.plt"}
       ]
     ]
   end
