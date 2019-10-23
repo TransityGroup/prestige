@@ -24,6 +24,8 @@ defmodule Prestige do
     defexception [:message, :code]
   end
 
+  @type transaction_return :: :commit | {:commit, term} | :rollback | {:rollback, term}
+
   @spec new_session(keyword) :: Session.t()
   defdelegate new_session(opts), to: Session, as: :new
 
@@ -90,7 +92,7 @@ defmodule Prestige do
     Client.execute(session, "stmt", statement, args)
   end
 
-  @spec transaction(session :: Session.t(), function :: (session :: Session.t() -> term)) :: term
+  @spec transaction(session :: Session.t(), function :: (session :: Session.t() -> transaction_return())) :: term
   def transaction(%Session{} = session, function) when is_function(function, 1) do
     session = Client.start_transaction(session)
 
