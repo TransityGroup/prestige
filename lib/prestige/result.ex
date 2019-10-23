@@ -1,87 +1,56 @@
 defmodule Prestige.Result do
   @moduledoc """
-  Handles transforming result from presto into desired datastructure
+  Struct to hold query results.
   """
 
-  @doc """
-  Transforms a successful presto select query into a map
-  """
-  def transform({:ok, %Tesla.Env{status: 200, body: %{"error" => error}}}, _rows_as_maps) do
-    raise Prestige.Error,
-      message: error["message"],
-      code: error["errorCode"],
-      location: error["errorLocation"],
-      name: error["errorName"],
-      type: error["errorType"],
-      stack: get_in(error, ["failureInfo", "stack"])
+  alias Prestige.ColumnDefinition
+
+  @type t :: %Prestige.Result{
+          columns: list(ColumnDefinition.t()),
+          rows: list,
+          presto_headers: list
+        }
+
+  defstruct [:columns, :rows, :presto_headers]
+
+  @spec as_maps(t) :: list(%{String.t() => term})
+  def as_maps(%Prestige.Result{} = result) do
+    Enum.map(result.rows, &transform_row(&1, result.columns))
   end
 
-  def transform({:ok, %Tesla.Env{status: 200, body: body}}, rows_as_maps) do
-    data =
-      body
-      |> Map.get("data", [])
-      |> Enum.map(&transform_row(&1, Map.get(body, "columns", []), rows_as_maps))
-
-    {data, %{next_uri: body["nextUri"], rows_as_maps: rows_as_maps}}
-  end
-
-  def transform({:ok, %Tesla.Env{status: 400, body: body}}, _rows_as_maps) do
-    raise Prestige.BadRequestError, message: body
-  end
-
-  def transform({:error, :econnrefused}, _) do
-    raise Prestige.ConnectionError, message: "Error connecting to Presto.", code: :econnrefused
-  end
-
-  defp transform_row(row, _columns, false), do: row
-
-  defp transform_row(row, columns, true) do
+  defp transform_row(row, columns) do
     columns
     |> Enum.zip(row)
-    |> Enum.map(fn {schema, value} -> %{name: schema["name"], schema: schema["typeSignature"], value: value} end)
-    |> Enum.map(&transform_column/1)
+    |> Enum.map(fn {column, value} -> transform_column(column, value) end)
     |> Map.new()
   end
 
-  defp transform_column(%{schema: %{"rawType" => "array"}, value: nil} = column) do
-    column
-    |> Map.update(:value, [], fn _ -> [] end)
-    |> transform_column()
+  defp transform_column(%{type: "array"} = column, nil) do
+    transform_column(column, [])
   end
 
-  defp transform_column(%{
-         name: name,
-         schema: %{"rawType" => "array", "typeArguments" => [type_argument]},
-         value: values
-       }) do
+  defp transform_column(%{type: "array"} = column, values) do
+    sub_definition = ColumnDefinition.new(column, type: column.sub_type)
+
     transformed_values =
       values
-      |> Enum.map(fn value -> %{schema: type_argument, value: value} end)
-      |> Enum.map(&transform_value/1)
+      |> Enum.map(&transform_value(sub_definition, &1))
 
-    {name, transformed_values}
+    {column.name, transformed_values}
   end
 
-  defp transform_column(column) do
-    {column[:name], transform_value(column)}
+  defp transform_column(column, value) do
+    {column.name, transform_value(column, value)}
   end
 
-  defp transform_value(%{
-         schema: %{"rawType" => "row", "literalArguments" => _, "typeArguments" => _},
-         value: nil
-       }),
-       do: nil
+  defp transform_value(%{type: "row"}, nil), do: nil
 
-  defp transform_value(%{
-         schema: %{"rawType" => "row", "literalArguments" => literal_arguments, "typeArguments" => type_arguments},
-         value: values
-       }) do
-    [literal_arguments, type_arguments, values]
+  defp transform_value(%{type: "row"} = column, values) do
+    [column.sub_columns, values]
     |> Enum.zip()
-    |> Enum.map(fn {name, schema, value} -> %{name: name, schema: schema, value: value} end)
-    |> Enum.map(&transform_column/1)
+    |> Enum.map(fn {sub_column, value} -> transform_column(sub_column, value) end)
     |> Map.new()
   end
 
-  defp transform_value(%{value: value}), do: value
+  defp transform_value(_column, value), do: value
 end

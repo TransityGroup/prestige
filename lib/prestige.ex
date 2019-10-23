@@ -3,6 +3,9 @@ defmodule Prestige do
   An elixir client for [Prestodb](http://prestodb.github.io/).
   """
 
+  alias Prestige.Client
+  alias Prestige.Session
+
   defmodule Error do
     @moduledoc false
 
@@ -21,28 +24,121 @@ defmodule Prestige do
     defexception [:message, :code]
   end
 
-  @doc """
-  Executes a prepared statement against presto, returns a stream
+  @spec new_session(keyword) :: Session.t()
+  defdelegate new_session(opts), to: Session, as: :new
 
-  Options:
+  @spec prepare(session :: Session.t(), name :: String.t(), statement :: String.t()) ::
+          {:ok, Session.t()} | {:error, term}
+  def prepare(%Session{} = session, name, statement) do
+    new_session = prepare!(session, name, statement)
+    {:ok, new_session}
+  rescue
+    error -> {:error, error}
+  end
 
-    * `:rows_as_maps` - converts response to a list of maps, with the column name as the key and the row data as the value
+  @spec prepare!(session :: Session.t(), name :: String.t(), statement :: String.t()) :: Session.t()
+  def prepare!(%Session{} = session, name, statement) do
+    Client.prepare_statement(session, name, statement)
+  end
 
-  All other specified options are passed directly to presto as headers, a
-  full list of those headers can be found [here](https://github.com/prestosql/presto/blob/master/presto-client/src/main/java/io/prestosql/client/PrestoHeaders.java).
+  @spec execute(session :: Session.t(), name :: String.t(), args :: list) :: {:ok, Prestige.Result.t()} | {:error, term}
+  def execute(%Session{} = session, name, args) do
+    result = execute!(session, name, args)
+    {:ok, result}
+  rescue
+    error -> {:error, error}
+  end
 
-  ## Examples
+  @spec execute!(session :: Session.t(), name :: String.t(), args :: list) :: Prestige.Result.t()
+  def execute!(%Session{} = session, name, args) do
+    Client.execute_statement(session, name, args)
+    |> Enum.to_list()
+    |> collapse_results()
+  end
 
-      iex> Prestige.execute("select * from users") |> Prestige.prefetch
-      [[1, "Brian"], [2, "Shannon"]]
+  @spec close(session :: Session.t(), name :: String.t()) :: {:ok, Session.t()} | {:error, term}
+  def close(%Session{} = session, name) do
+    new_session = close!(session, name)
+    {:ok, new_session}
+  rescue
+    error -> {:error, error}
+  end
 
-      iex> Prestige.execute("select * from users", rows_as_maps: true) |> Prestige.prefetch
-      [%{"id" => 1, "name" => "Brian"}, %{"id" => 2, "name" => "Shannon"}]
-  """
-  defdelegate execute(statement, opts \\ []), to: Prestige.Statement
+  @spec close!(session :: Session.t(), name :: String.t()) :: Session.t()
+  def close!(%Session{} = session, name) do
+    Client.close_statement(session, name)
+  end
 
-  @doc """
-  Converts a presto stream into a map for consumption
-  """
-  defdelegate prefetch(result), to: Prestige.Statement
+  @spec query(session :: Session.t(), statement :: String.t(), args :: list) ::
+          {:ok, Prestige.Result.t()} | {:error, term}
+  def query(%Session{} = session, statement, args \\ []) do
+    result = query!(session, statement, args)
+    {:ok, result}
+  rescue
+    error -> {:error, error}
+  end
+
+  @spec query!(session :: Session.t(), statement :: String.t(), args :: list) :: Prestige.Result.t()
+  def query!(%Session{} = session, statement, args \\ []) do
+    Client.execute(session, "stmt", statement, args)
+    |> Enum.to_list()
+    |> collapse_results()
+  end
+
+  @spec stream!(session :: Session.t(), statement :: String.t(), args :: list) :: Enumerable.t()
+  def stream!(%Session{} = session, statement, args \\ []) do
+    Client.execute(session, "stmt", statement, args)
+  end
+
+  @spec transaction(session :: Session.t(), function :: (session :: Session.t() -> term)) :: term
+  def transaction(%Session{} = session, function) when is_function(function, 1) do
+    session = Client.start_transaction(session)
+
+    result =
+      try do
+        function.(session)
+      rescue
+        e ->
+          Client.rollback(session)
+          reraise e, __STACKTRACE__
+      end
+
+    case result do
+      :commit ->
+        Client.commit(session)
+        :ok
+
+      {:commit, value} ->
+        Client.commit(session)
+        value
+
+      :rollback ->
+        Client.rollback(session)
+        :ok
+
+      {:rollback, value} ->
+        Client.rollback(session)
+        value
+    end
+  end
+
+  defp collapse_results(results) do
+    columns = List.first(results).columns
+    rows = flatten(results)
+
+    %Prestige.Result{
+      columns: columns,
+      rows: rows,
+      presto_headers: []
+    }
+  end
+
+  defp flatten(results) do
+    Enum.reduce(results, [], fn result, acc ->
+      Enum.reduce(result.rows, acc, fn row, acc ->
+        [row | acc]
+      end)
+    end)
+    |> Enum.reverse()
+  end
 end
