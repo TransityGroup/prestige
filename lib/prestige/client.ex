@@ -17,6 +17,21 @@ defmodule Prestige.Client do
               prepare_statement: true
   end
 
+  @spec execute(session :: Session.t(), statement :: String.t()) :: Enumerable.t()
+  def execute(session, statement) do
+    request = %Request{
+      session: session,
+      name: "stmt",
+      statement: statement,
+      args: [],
+      headers: [],
+      prepare_statement: false
+    }
+
+    RequestStream.stream(request)
+    |> ResponseParser.parse()
+  end
+
   @spec execute(session :: Session.t(), name :: String.t(), statement :: String.t(), args :: list, headers :: list) ::
           Enumerable.t()
   def execute(session, name, statement, args, headers \\ []) do

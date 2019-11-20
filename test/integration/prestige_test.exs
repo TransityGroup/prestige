@@ -43,6 +43,14 @@ defmodule PrestigeTest do
     assert result.rows == [[10, "george"]]
   end
 
+  test "unprepared statement", %{session: session} do
+    Prestige.query!(session, "insert into people(name, age) values('george', 10), ('pete', 20)")
+    {:ok, result} = Prestige.execute(session, "select * from people")
+
+    assert result.rows == [[10, "george"], [20, "pete"]]
+    assert [%{"name" => "george", "age" => 10}, %{"name" => "pete", "age" => 20}] == Prestige.Result.as_maps(result)
+  end
+
   test "stream results", %{session: session} do
     Prestige.query!(session, "insert into people(name, age) values('george', 10), ('pete', 20)")
 

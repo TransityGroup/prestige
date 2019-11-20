@@ -58,6 +58,21 @@ defmodule Prestige do
     |> collapse_results()
   end
 
+  @spec execute(session :: Session.t(), statement :: String.t()) :: {:ok, Prestige.Result.t()} | {:error, term}
+  def execute(%Session{} = session, statement) do
+    result = execute!(session, statement)
+    {:ok, result}
+  rescue
+    error -> {:error, error}
+  end
+
+  @spec execute!(session :: Session.t(), statement :: String.t()) :: Prestige.Result.t()
+  def execute!(%Session{} = session, statement) do
+    Client.execute(session, statement)
+    |> Enum.to_list()
+    |> collapse_results()
+  end
+
   @spec close(session :: Session.t(), name :: String.t()) :: {:ok, Session.t()} | {:error, term}
   def close(%Session{} = session, name) do
     new_session = close!(session, name)
