@@ -25,7 +25,8 @@ defmodule Prestige.Session do
             transaction_id: nil,
             catalog: nil,
             schema: nil,
-            prepared_statements: []
+            prepared_statements: [],
+            receive_timeout: nil
 
   def new(opts) do
     struct!(__MODULE__, opts)

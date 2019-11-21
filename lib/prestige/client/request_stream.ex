@@ -15,10 +15,10 @@ defmodule Prestige.Client.RequestStream do
 
   defmodule NextUri do
     @moduledoc false
-    defstruct [:uri]
+    defstruct [:uri, :session]
 
-    def new(body) do
-      %__MODULE__{uri: Map.get(body, "nextUri")}
+    def new(body, session) do
+      %__MODULE__{uri: Map.get(body, "nextUri"), session: session}
     end
   end
 
@@ -34,8 +34,8 @@ defmodule Prestige.Client.RequestStream do
     url = session.url <> @statement_path
     headers = create_headers(session, nil, request.headers)
 
-    post(url, request.statement, headers: headers)
-    |> validate()
+    post(url, request.statement, headers: headers, opts: custom_opts(session))
+    |> validate(session)
   end
 
   defp make_request(%Request{session: session} = request) do
@@ -44,28 +44,28 @@ defmodule Prestige.Client.RequestStream do
     execute_statement = execute_statement(request.name, request.args)
     headers = create_headers(session, prepared_statement, request.headers)
 
-    post(url, execute_statement, headers: headers)
-    |> validate()
+    post(url, execute_statement, headers: headers, opts: custom_opts(session))
+    |> validate(session)
   end
 
   defp make_request(%NextUri{uri: nil}) do
     {:halt, :ok}
   end
 
-  defp make_request(%NextUri{uri: uri}) do
-    get(uri)
-    |> validate()
+  defp make_request(%NextUri{uri: uri, session: session}) do
+    get(uri, opts: custom_opts(session))
+    |> validate(session)
   end
 
-  defp validate({:ok, %Tesla.Env{status: 200, body: body} = response}) do
-    {[response], NextUri.new(body)}
+  defp validate({:ok, %Tesla.Env{status: 200, body: body} = response}, session) do
+    {[response], NextUri.new(body, session)}
   end
 
-  defp validate({:ok, %Tesla.Env{status: 400, body: body}}) do
+  defp validate({:ok, %Tesla.Env{status: 400, body: body}}, _session) do
     raise Prestige.BadRequestError, message: body
   end
 
-  defp validate({:error, :econnrefused}) do
+  defp validate({:error, :econnrefused}, _session) do
     raise Prestige.ConnectionError, message: "Error connecting to Presto.", code: :econnrefused
   end
 
@@ -87,6 +87,13 @@ defmodule Prestige.Client.RequestStream do
       | custom_headers
     ]
     |> List.flatten()
+  end
+
+  defp custom_opts(session) do
+    case session.receive_timeout do
+      nil -> []
+      timeout -> [adapter: [recv_timeout: timeout]]
+    end
   end
 
   defp header(_key, nil) do

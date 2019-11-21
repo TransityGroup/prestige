@@ -6,7 +6,13 @@ defmodule Prestige.IntTest do
 
   @moduletag capture_log: true
 
-  @session Prestige.new_session(url: "http://localhost:8080", user: "bbalser", catalog: "hive", schema: "default")
+  @session Prestige.new_session(
+             url: "http://localhost:8080",
+             user: "bbalser",
+             catalog: "hive",
+             schema: "default",
+             receive_timeout: 10_000
+           )
 
   setup_all do
     exec("CREATE TABLE IF NOT EXISTS tx_people(name varchar, age int)")
