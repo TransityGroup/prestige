@@ -27,8 +27,8 @@ defmodule Prestige do
   @type transaction_return :: :commit | {:commit, term} | :rollback | {:rollback, term}
 
   @type query_opts :: [
-    name: String.t()
-  ]
+          name: String.t()
+        ]
 
   @spec new_session(keyword) :: Session.t()
   defdelegate new_session(opts), to: Session, as: :new
