@@ -26,6 +26,10 @@ defmodule Prestige do
 
   @type transaction_return :: :commit | {:commit, term} | :rollback | {:rollback, term}
 
+  @type query_opts :: [
+    name: String.t()
+  ]
+
   @spec new_session(keyword) :: Session.t()
   defdelegate new_session(opts), to: Session, as: :new
 
@@ -86,25 +90,29 @@ defmodule Prestige do
     Client.close_statement(session, name)
   end
 
-  @spec query(session :: Session.t(), statement :: String.t(), args :: list) ::
+  @spec query(session :: Session.t(), statement :: String.t(), args :: list, opts :: query_opts) ::
           {:ok, Prestige.Result.t()} | {:error, term}
-  def query(%Session{} = session, statement, args \\ []) do
-    result = query!(session, statement, args)
+  def query(%Session{} = session, statement, args \\ [], opts \\ []) do
+    result = query!(session, statement, args, opts)
     {:ok, result}
   rescue
     error -> {:error, error}
   end
 
-  @spec query!(session :: Session.t(), statement :: String.t(), args :: list) :: Prestige.Result.t()
-  def query!(%Session{} = session, statement, args \\ []) do
-    Client.execute(session, "stmt", statement, args)
+  @spec query!(session :: Session.t(), statement :: String.t(), args :: list, opts :: query_opts) :: Prestige.Result.t()
+  def query!(%Session{} = session, statement, args \\ [], opts \\ []) do
+    name = Keyword.get(opts, :name, "stmt")
+
+    Client.execute(session, name, statement, args)
     |> Enum.to_list()
     |> collapse_results()
   end
 
-  @spec stream!(session :: Session.t(), statement :: String.t(), args :: list) :: Enumerable.t()
-  def stream!(%Session{} = session, statement, args \\ []) do
-    Client.execute(session, "stmt", statement, args)
+  @spec stream!(session :: Session.t(), statement :: String.t(), args :: list, opts :: query_opts) :: Enumerable.t()
+  def stream!(%Session{} = session, statement, args \\ [], opts \\ []) do
+    name = Keyword.get(opts, :name, "stmt")
+
+    Client.execute(session, name, statement, args)
   end
 
   @spec transaction(session :: Session.t(), function :: (session :: Session.t() -> transaction_return())) :: term
