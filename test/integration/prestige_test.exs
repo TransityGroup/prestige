@@ -38,7 +38,7 @@ defmodule PrestigeTest do
 
   test "query with arguments", %{session: session} do
     Prestige.query!(session, "insert into people(name, age) values('george', 10), ('pete', 20)")
-    {:ok, result} = Prestige.query(session, "select * from people where name = ?", ["george"])
+    {:ok, result} = Prestige.query(session, "select * from people where name = ?", ["george"], name: "custom_name")
 
     assert result.rows == [[10, "george"]]
   end
